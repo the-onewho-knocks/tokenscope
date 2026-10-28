@@ -1,0 +1,6 @@
+
+[accurate]
+tiktoken>=0.7
+
+[dev]
+pytest>=7

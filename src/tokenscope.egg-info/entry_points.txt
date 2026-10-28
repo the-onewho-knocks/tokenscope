@@ -1,0 +1,2 @@
+[console_scripts]
+tokenscope = tokenscope.cli:main

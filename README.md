@@ -1,0 +1,73 @@
+# tokenscope
+
+Count LLM tokens across a repository and see exactly where they live, per file and per
+folder/module. Use it to decide what to send to an AI model, what to exclude, and how much a
+full-repo prompt will cost.
+
+## Install
+
+```bash
+cd tokenscope
+pip install -e .                 # zero dependencies, uses a built-in estimator
+pip install -e ".[accurate]"     # adds tiktoken for exact BPE counts
+pip install -e ".[dev]"          # pytest
+```
+
+## Usage
+
+```bash
+tokenscope .                                   # table report for current repo
+tokenscope ~/code/myapp -d 3 -n 25             # deeper folder tree, top 25 files
+tokenscope . --ext py --ext md                 # only Python and Markdown
+tokenscope . -i 'tests/*' -i '*.svg'           # extra ignore globs
+tokenscope . --price-per-mtok 3                # estimate input cost of the whole repo
+tokenscope . -f json -o tokens.json            # machine-readable
+tokenscope . -f csv-dirs -o folders.csv        # per-folder CSV (open in a spreadsheet)
+tokenscope . -t tiktoken -e o200k_base         # pick tokenizer / encoding
+python -m tokenscope .                         # without installing the script
+```
+
+### What the report shows
+
+- **Context-window fit**: your whole repo as a percentage of 8k / 32k / 128k / 200k / 1M windows.
+- **Tokens per folder**: recursive total, share of repo, file count, and `own` (files directly
+  in that folder, excluding subfolders), with a bar chart.
+- **Top files** by token count, and a **by file type** breakdown.
+
+### Defaults
+
+Skips `.git`, `node_modules`, virtualenvs, build output, lockfiles, minified files, binaries
+(by extension and by NUL-byte sniffing) and files over 1 MB. The root `.gitignore` is honored
+(simplified matching: no `!` negation). Use `--no-gitignore` to disable.
+
+## Library use
+
+```python
+from tokenscope import scan_repo
+
+res = scan_repo("path/to/repo", tokenizer="approx")
+print(res.total_tokens)
+for d in sorted(res.dirs.values(), key=lambda d: -d.tokens)[:10]:
+    print(d.path, d.tokens)
+```
+
+## Accuracy note
+
+`tiktoken` gives exact counts for OpenAI encodings. Claude and other models use different
+tokenizers, so treat every number here as a close estimate (typically within ~10-20%), which is
+plenty for budgeting and for finding the heavy folders. The built-in `approx` mode is similarly
+rough and needs no install or network access.
+
+## Tips for efficient AI usage
+
+1. Run `tokenscope . -d 3` and find folders with a large share but little relevance to your task.
+2. Exclude them (`-i`, or add to `.gitignore`) and send only the modules that matter.
+3. Watch for generated code, fixtures, data dumps and vendored libraries, which are the usual
+   token hogs.
+4. Re-run after trimming to confirm the repo fits your model's context window.
+
+## Tests
+
+```bash
+pytest
+```

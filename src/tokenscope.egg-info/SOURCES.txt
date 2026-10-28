@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/tokenscope/__init__.py
+src/tokenscope/__main__.py
+src/tokenscope/cli.py
+src/tokenscope/report.py
+src/tokenscope/scanner.py
+src/tokenscope/tokenizers.py
+src/tokenscope.egg-info/PKG-INFO
+src/tokenscope.egg-info/SOURCES.txt
+src/tokenscope.egg-info/dependency_links.txt
+src/tokenscope.egg-info/entry_points.txt
+src/tokenscope.egg-info/requires.txt
+src/tokenscope.egg-info/top_level.txt
+tests/test_scanner.py
